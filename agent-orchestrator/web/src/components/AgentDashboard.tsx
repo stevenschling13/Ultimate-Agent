@@ -16,12 +16,33 @@ export default function AgentDashboard() {
     setIsExecuting(true); setEvents([]);
     const url = `/api/execute/stream?strategy=${encodeURIComponent(selectedStrategy)}&goal=${encodeURIComponent(JSON.stringify(sampleGoal))}`;
     const es = connectSSE(url, (ev) => {
+      if (ev.type === "error") {
+        setIsExecuting(false);
+        es.close();
+        return;
+      }
+
+      let data: any = null;
       try {
-        const data = JSON.parse(ev.data);
-        if ((ev as any).type === "done" || data?.type === "done") { setExec(data); es.close(); setIsExecuting(false); }
-        else if (data?.type === "progress") setEvents(prev => [data, ...prev].slice(0,200));
-        else setExec(data);
-      } catch {}
+        data = ev.data ? JSON.parse(ev.data) : null;
+      } catch (error) {
+        console.error("Failed to parse SSE payload", error);
+        return;
+      }
+
+      if (ev.type === "done") {
+        setExec(data);
+        setIsExecuting(false);
+        es.close();
+        return;
+      }
+
+      if (ev.type === "progress") {
+        setEvents(prev => [data, ...prev].slice(0, 200));
+        return;
+      }
+
+      setExec(data);
     });
   }
 
