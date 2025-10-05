@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  agent-orchestrator:
+    build: ./agent-orchestrator
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?OPENAI_API_KEY must be set before starting Docker Compose}
+    env_file:
+      - agent-orchestrator/.env
