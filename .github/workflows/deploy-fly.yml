@@ -10,11 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - run: flyctl secrets set OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} --app ultimate-agent-api
         working-directory: agent-orchestrator
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      - run: flyctl secrets set OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} --stage
+      - run: flyctl deploy --remote-only
         working-directory: agent-orchestrator
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
