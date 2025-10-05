@@ -1,35 +1,46 @@
-# Ultimate-Agent
+# Agent Orchestration System v3.0
 
-## API key configuration
+Production-ready multi-agent orchestration with OpenAI GPT-4, real-time streaming, and a React dashboard.
 
-Ultimate-Agent no longer ships with any hard-coded API credentials. To run the
-project you must supply your own OpenAI API key at runtime using secure
-mechanisms such as:
+## Prerequisites
 
-- Exporting the `OPENAI_API_KEY` environment variable in your local shell or
-  runtime environment manager.
-- Storing the secret in your operating system's keychain, password manager, or
-  dedicated secrets vault and injecting it into the environment at launch.
-- Configuring CI/CD pipelines or container orchestration platforms (e.g.,
-  GitHub Actions, Docker secrets, Kubernetes Secrets, or HashiCorp Vault) to
-  provide the key to the application as an environment variable at runtime.
+- Node.js 20+
+- OpenAI API key (GPT-4 access)
+- Docker 24+ (optional)
 
-When using Docker Compose, `OPENAI_API_KEY` must be supplied externally before
-starting the stack. Compose will refuse to start if the variable is missing,
-ensuring that no default or placeholder key is accidentally used.
+## Quick Start
 
-## Security notice
+### Backend
 
-The previously committed OpenAI API key has been revoked. A replacement secret
-has been provisioned through the team's secure secret-distribution channels
-(e.g., environment variable management in deployment environments, CI/CD secret
-stores, and vault services). Request access from your project administrator if
-you require the updated credential.
+```bash
+cd agent-orchestrator
+cp .env.example .env  # Add your OpenAI API key
+npm install
+npm run dev
+```
 
-## Local environment setup
+### Frontend
 
-1. Copy `agent-orchestrator/.env.example` to `agent-orchestrator/.env`.
-2. Populate the `OPENAI_API_KEY` value with your real key (do **not** commit
-   this file).
-3. Ensure the `OPENAI_API_KEY` environment variable is set when running
-   services locally or via Docker Compose.
+```bash
+cd agent-orchestrator/web
+npm install
+npm run dev
+```
+
+### Docker
+
+```bash
+export OPENAI_API_KEY="your-key"
+docker compose up --build
+```
+
+## Architecture
+
+- **Backend:** TypeScript/Express with OpenAI GPT-4 integration
+- **Frontend:** React with Server-Sent Events streaming
+- **Orchestration:** Multi-strategy task planning (parallel, sequential, cost-optimized)
+- **Execution:** Topological dependency resolution with retry logic
+
+## License
+
+MIT
