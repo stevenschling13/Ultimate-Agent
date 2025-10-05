@@ -1,46 +1,28 @@
-# Agent Orchestration System v3.0
+# Production AI Agent System v4.0
 
-Production-ready multi-agent orchestration with OpenAI GPT-4, real-time streaming, and a React dashboard.
-
-## Prerequisites
-
-- Node.js 20+
-- OpenAI API key (GPT-4 access)
-- Docker 24+ (optional)
-
-## Quick Start
-
-### Backend
-
-```bash
-cd agent-orchestrator
-cp .env.example .env  # Add your OpenAI API key
-npm install
-npm run dev
-```
-
-### Frontend
-
-```bash
-cd agent-orchestrator/web
-npm install
-npm run dev
-```
-
-### Docker
-
-```bash
-export OPENAI_API_KEY="your-key"
-docker compose up --build
-```
+Enterprise-grade multi-agent orchestration with ReAct reasoning, memory, and observability.
 
 ## Architecture
+- **Coordinator**: Plans and orchestrates multi-step workflows
+- **Coder**: Generates production-ready code with tests
+- **Analyst**: Analyzes requirements and data
+- **Reviewer**: Validates outputs and provides feedback
+- **Tool Registry**: Extensible tool system with circuit breakers
 
-- **Backend:** TypeScript/Express with OpenAI GPT-4 integration
-- **Frontend:** React with Server-Sent Events streaming
-- **Orchestration:** Multi-strategy task planning (parallel, sequential, cost-optimized)
-- **Execution:** Topological dependency resolution with retry logic
+## Quick Start
+```bash
+cd agent-orchestrator
+cp .env.example .env  # Add OPENAI_API_KEY
+npm install && npm run dev
+```
 
-## License
+Frontend: `cd agent-orchestrator/web && npm install && npm run dev`
 
-MIT
+## Features
+- ReAct (Reasoning + Acting) pattern
+- Chain-of-thought reasoning
+- Memory & context preservation
+- Circuit breakers & rate limiting
+- Comprehensive metrics
+- Streaming SSE responses
+- Structured outputs with validation

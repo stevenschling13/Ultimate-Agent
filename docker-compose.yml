@@ -3,12 +3,13 @@ services:
   backend:
     build: { context: ./agent-orchestrator }
     environment:
-      NODE_ENV: production
-      PORT: 8080
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo}
-    ports: ["8080:8080"]
+    ports:
+      - "8080:8080"
   frontend:
     build: { context: ./agent-orchestrator/web }
-    depends_on: [backend]
-    ports: ["4173:80"]
+    depends_on:
+      - backend
+    ports:
+      - "4173:80"
