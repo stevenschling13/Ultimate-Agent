@@ -1,0 +1,12 @@
+app = "ultimate-agent-web"
+primary_region = "ord"
+[build]
+  dockerfile = "Dockerfile"
+[[services]]
+  internal_port = 4173
+  processes = ["app"]
+  protocol = "tcp"
+  [[services.ports]]
+    port = 80
+  [[services.ports]]
+    port = 443
