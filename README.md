@@ -33,3 +33,22 @@ you require the updated credential.
    this file).
 3. Ensure the `OPENAI_API_KEY` environment variable is set when running
    services locally or via Docker Compose.
+
+## Docker Compose workflow
+
+The repository provides Dockerfiles for both the orchestrator API and the web
+frontend. With your `.env` file in place and `OPENAI_API_KEY` exported in your
+shell, launch the stack with:
+
+```sh
+docker compose up --build
+```
+
+Compose builds two images:
+
+- `agent-orchestrator`: a Node.js service that exposes the API on port `3000`.
+- `orchestrator-web`: an Nginx container that serves the static frontend on
+  port `4173`.
+
+No additional build arguments are required—the services rely solely on the
+`OPENAI_API_KEY` environment variable supplied at runtime.

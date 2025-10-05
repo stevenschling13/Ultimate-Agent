@@ -2,8 +2,19 @@ version: "3.9"
 
 services:
   agent-orchestrator:
-    build: ./agent-orchestrator
+    build:
+      context: ./agent-orchestrator
+    ports:
+      - "3000:3000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY:?OPENAI_API_KEY must be set before starting Docker Compose}
+      - PORT=3000
     env_file:
       - agent-orchestrator/.env
+  orchestrator-web:
+    build:
+      context: ./agent-orchestrator/web
+    ports:
+      - "4173:80"
+    depends_on:
+      - agent-orchestrator
