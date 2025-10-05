@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
@@ -15,20 +14,51 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = config.port;
 
+const buildHealthResponse = () => ({
+  status: 'healthy',
+  timestamp: new Date().toISOString(),
+  openaiConfigured: !!config.openaiApiKey
+});
+
 app.use(helmet({
   contentSecurityPolicy: false,
 }));
 app.use(compression());
-app.use(cors());
+
+app.use((req, res, next) => {
+  const allowOrigin = process.env.CORS_ORIGIN || req.headers.origin || '*';
+  res.header('Access-Control-Allow-Origin', allowOrigin);
+  res.header('Vary', 'Origin');
+
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, x-requested-with'
+    );
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/health', (req, res) => {
+  res.json(buildHealthResponse());
+});
+
+app.get('/', (req, res, next) => {
+  if (config.nodeEnv === 'production') {
+    return next();
+  }
+
+  res.json(buildHealthResponse());
+});
+
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
-    timestamp: new Date().toISOString(),
-    openaiConfigured: !!config.openaiApiKey 
-  });
+  res.json(buildHealthResponse());
 });
 
 app.get('/api/agents', (req, res) => {
@@ -60,6 +90,10 @@ app.get('/api/agents', (req, res) => {
       }
     ]
   });
+});
+
+app.post('/api/plan', (req, res) => {
+  res.json({ status: 'accepted', input: req.body ?? {} });
 });
 
 app.get('/api/logs', (req, res) => {
@@ -105,13 +139,24 @@ if (config.nodeEnv === 'production') {
   });
 }
 
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: config.nodeEnv === 'development' ? err.message : undefined
-  });
-});
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (err instanceof SyntaxError && 'body' in err) {
+      return res.status(400).json({ error: 'Invalid JSON' });
+    }
+
+    console.error('Error:', err);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: config.nodeEnv === 'development' ? err.message : undefined
+    });
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
