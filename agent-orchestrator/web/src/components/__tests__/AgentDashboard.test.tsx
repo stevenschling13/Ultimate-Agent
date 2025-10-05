@@ -68,4 +68,48 @@ describe("AgentDashboard", () => {
     expect(screen.getByText("No tasks have been scheduled.")).toBeInTheDocument();
     expect(screen.getByText("Status: pending")).toBeInTheDocument();
   });
+
+  it("preserves existing plan details when subsequent updates omit the plan", async () => {
+    const { mockSource } = setup();
+
+    await act(async () => {
+      mockSource.emit(
+        "message",
+        JSON.stringify({
+          execution: {
+            id: "exec-1",
+            status: "running",
+            plan: {
+              title: "Initial plan",
+              summary: "Do the thing",
+              steps: [
+                { id: "step-1", title: "Step A", description: "First" },
+              ],
+            },
+          },
+        })
+      );
+    });
+
+    expect(await screen.findByText("Initial plan")).toBeInTheDocument();
+
+    await act(async () => {
+      mockSource.emit(
+        "message",
+        JSON.stringify({
+          execution: {
+            status: "executing",
+            tasks: [{ id: "task-1", label: "Task 1", status: "active" }],
+          },
+        })
+      );
+    });
+
+    expect(screen.getByText("Initial plan")).toBeInTheDocument();
+    expect(screen.getByText("Do the thing")).toBeInTheDocument();
+    expect(screen.getByText("Step A")).toBeInTheDocument();
+    expect(screen.getByText("Task 1")).toBeInTheDocument();
+    expect(screen.getByText("Status: active")).toBeInTheDocument();
+    expect(screen.getByText("Status: executing")).toBeInTheDocument();
+  });
 });

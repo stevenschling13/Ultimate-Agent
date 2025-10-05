@@ -62,6 +62,35 @@ function sanitizeText(value?: string | null, placeholder: string = "—"): strin
   return trimmed && trimmed.length > 0 ? trimmed : placeholder;
 }
 
+function mergeExecutionState(
+  previous: ExecutionState | null,
+  incoming: ExecutionState | null | undefined
+): ExecutionState | null {
+  if (!incoming) {
+    return previous;
+  }
+
+  if (!previous) {
+    return incoming;
+  }
+
+  const plan =
+    incoming.plan !== undefined ? incoming.plan ?? null : previous.plan ?? null;
+  const tasks =
+    incoming.tasks !== undefined
+      ? (incoming.tasks ?? null)
+      : previous.tasks ?? null;
+
+  return {
+    ...previous,
+    ...incoming,
+    id: incoming.id ?? previous.id,
+    status: incoming.status ?? previous.status,
+    plan,
+    tasks,
+  };
+}
+
 const EMPTY_PLAN_PLACEHOLDERS = {
   title: "Awaiting plan title…",
   summary: "Awaiting plan summary…",
@@ -88,7 +117,10 @@ export const AgentDashboard: React.FC<AgentDashboardProps> = ({
       try {
         const payload: EventPayload = JSON.parse(event.data ?? "{}");
         if (payload?.execution) {
-          setExecution(payload.execution);
+          setExecution((current) =>
+            mergeExecutionState(current, payload.execution)
+          );
+          setConnectionError(null);
         }
       } catch (error) {
         console.warn("Failed to parse execution payload", error);
@@ -111,7 +143,7 @@ export const AgentDashboard: React.FC<AgentDashboardProps> = ({
     };
   }, [sseUrl, createEventSource]);
 
-  const plan = execution?.plan ?? {};
+  const plan = execution?.plan ?? null;
 
   const planSteps = useMemo(() => {
     if (!plan || !Array.isArray(plan.steps)) {
