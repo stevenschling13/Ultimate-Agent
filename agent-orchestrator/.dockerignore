@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log*
+/dist
+/out
+.DS_Store
+.idea
+.vscode
+coverage
+
+# Ignore local env files
+.env
