@@ -14,7 +14,7 @@ export interface CompletionUsage {
   total_tokens: number;
 }
 
-export interface CompletionResult<T = string> {
+export interface CompletionResult<T = OpenAI.Chat.Completions.ChatCompletion> {
   text: string;
   usage: CompletionUsage;
   raw: T;
@@ -59,7 +59,7 @@ export class OpenAIClient {
   async complete(
     prompt: string,
     opts: CompleteOptions = {}
-  ): Promise<CompletionResult<OpenAI.Chat.Completions.ChatCompletion>> {
+  ): Promise<CompletionResult> {
     return this.withRetry(async () => {
       const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
         { role: "system", content: opts.system ?? "You are precise and terse." },
@@ -94,7 +94,16 @@ export class OpenAIClient {
   }
 
   async synthesizeCode(goal: any, context: any) {
-    const prompt = `Generate production-ready Python code.\nTitle: ${goal.title}\nDescription: ${goal.description}\nConstraints: ${JSON.stringify(goal.constraints)}\nSuccess: ${goal.success_criteria.join("; ")}\nContext: ${JSON.stringify(context)}\nRules: one complete module; error handling; type hints; docstrings; modular; testable; include example usage. Return ONLY Python code.`;
+    const prompt = [
+      "Generate production-ready Python code.",
+      `Title: ${goal.title}`,
+      `Description: ${goal.description}`,
+      `Constraints: ${JSON.stringify(goal.constraints)}`,
+      `Success: ${goal.success_criteria.join("; ")}`,
+      `Context: ${JSON.stringify(context)}`,
+      "Rules: one complete module; error handling; type hints; docstrings; modular; testable; include example usage.",
+      "Return ONLY Python code.",
+    ].join("\n");
 
     return this.complete(prompt, {
       maxTokens: 4000,
@@ -103,7 +112,15 @@ export class OpenAIClient {
   }
 
   async generateTests(code: string, goal: any) {
-    const prompt = `Write pytest tests for code.\n\`\`\`python\n${code}\n\`\`\`\nGoal: ${goal.title}\nSuccess: ${goal.success_criteria.join("; ")}\nRules: high coverage; fixtures; edge cases. Output ONLY test code.`;
+    const prompt = [
+      "Write pytest tests for code.",
+      "```python",
+      code,
+      "```",
+      `Goal: ${goal.title}`,
+      `Success: ${goal.success_criteria.join("; ")}`,
+      "Rules: high coverage; fixtures; edge cases. Output ONLY test code.",
+    ].join("\n");
 
     return this.complete(prompt, {
       maxTokens: 3000,
@@ -112,7 +129,19 @@ export class OpenAIClient {
   }
 
   async validateSolution(code: string, criteria: string[]) {
-    const prompt = `Validate Python code against criteria. Respond with JSON.\n\`\`\`python\n${code}\n\`\`\`\nCriteria:\n${criteria.map((criterion, index) => `${index + 1}. ${criterion}`).join("\n")}\nFormat: {"overall_pass":bool,"checks":[{"criterion":"","passed":bool,"details":""}],"suggestions":[]}`;
+    const criteriaList = criteria
+      .map((criterion, index) => `${index + 1}. ${criterion}`)
+      .join("\n");
+
+    const prompt = [
+      "Validate Python code against criteria. Respond with JSON.",
+      "```python",
+      code,
+      "```",
+      "Criteria:",
+      criteriaList,
+      'Format: {"overall_pass":bool,"checks":[{"criterion":"","passed":bool,"details":""}],"suggestions":[]}',
+    ].join("\n");
 
     const { text, usage } = await this.complete(prompt, {
       maxTokens: 2000,
@@ -135,7 +164,14 @@ export class OpenAIClient {
   }
 
   async generateDocs(goal: any, hint?: string) {
-    const prompt = `Write README.md and API docs for Python module.\nGoal: ${goal.title}\n${hint ?? ""}\nReturn Markdown only.`;
+    const prompt = [
+      "Write README.md and API docs for Python module.",
+      `Goal: ${goal.title}`,
+      hint ?? "",
+      "Return Markdown only.",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     return this.complete(prompt, {
       maxTokens: 1500,
@@ -143,7 +179,14 @@ export class OpenAIClient {
   }
 
   async synthesizeComplete(goal: any, context: any) {
-    const prompt = `Produce complete Python project.\nGoal: ${goal.title}\nDescription: ${goal.description}\nConstraints: ${JSON.stringify(goal.constraints)}\nFormat: {"code":"","tests":"","readme":""}`;
+    const prompt = [
+      "Produce complete Python project.",
+      `Goal: ${goal.title}`,
+      `Description: ${goal.description}`,
+      `Constraints: ${JSON.stringify(goal.constraints)}`,
+      `Context: ${JSON.stringify(context)}`,
+      'Format: {"code":"","tests":"","readme":""}',
+    ].join("\n");
 
     const { text, usage } = await this.complete(prompt, {
       maxTokens: 6000,

@@ -5,12 +5,14 @@ export class CoordinatorAgent extends BaseAgent {
   constructor() {
     super(
       "coordinator",
-      `You are a planning agent. Break goals into subtasks for:
-- coder: write code
-- analyst: analyze requirements
-- reviewer: validate outputs
-
-Return JSON: {"tasks":[{"type":"","description":"","assignedTo":"coder|analyst|reviewer","dependencies":[]}]}"
+      [
+        "You are a planning agent. Break goals into subtasks for:",
+        "- coder: write code",
+        "- analyst: analyze requirements",
+        "- reviewer: validate outputs",
+        "",
+        'Return JSON: {"tasks":[{"type":"","description":"","assignedTo":"coder|analyst|reviewer","dependencies":[]}]}',
+      ].join("\n"),
     );
   }
 
